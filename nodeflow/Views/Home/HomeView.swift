@@ -1,60 +1,73 @@
-//
-//  HomeView.swift
-//  nodeflow
-//
-
 import SwiftUI
 import SwiftData
 
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @Query(sort: \Flow.title) private var flows: [Flow]
+    @State private var showingNewFlow = false
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        DetailView(item: item)
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
+        NavigationStack {
+            Group {
+                if flows.isEmpty {
+                    emptyState
+                } else {
+                    flowList
                 }
-                .onDelete(perform: deleteItems)
             }
+            .navigationTitle("Flows")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                ToolbarItem(placement: .primaryAction) {
+                    Button { showingNewFlow = true } label: {
+                        Image(systemName: "plus")
                     }
                 }
             }
-            .navigationTitle("Nodeflow")
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+            .sheet(isPresented: $showingNewFlow) {
+                FlowFormView()
             }
         }
+    }
+
+    private var flowList: some View {
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                ForEach(flows) { flow in
+                    NavigationLink(destination: FlowDetailView(flow: flow)) {
+                        FlowCard(flow: flow)
+                    }
+                    .buttonStyle(.plain)
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            modelContext.delete(flow)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                }
+            }
+            .padding()
+        }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "rectangle.stack.badge.plus")
+                .font(.system(size: 56))
+                .foregroundStyle(.secondary)
+            Text("No Flows Yet")
+                .font(.title2.bold())
+            Text("Tap + to create your first flow,\nlike a Morning Routine.")
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+            Button("Create Flow") { showingNewFlow = true }
+                .buttonStyle(.borderedProminent)
+        }
+        .padding()
     }
 }
 
 #Preview {
     HomeView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: Flow.self, inMemory: true)
 }

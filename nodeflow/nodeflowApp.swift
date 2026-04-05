@@ -1,9 +1,3 @@
-//
-//  nodeflowApp.swift
-//  nodeflow
-//
-//  Created by נועם נאור on 05/04/2026.
-//
 
 import SwiftUI
 import SwiftData
@@ -20,7 +14,7 @@ struct nodeflowApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HomeView()
         }
         .modelContainer(sharedModelContainer)
     }

@@ -10,7 +10,11 @@ final class Flow {
     var scheduledTime: Date?
     var durationMinutes: Int?
     var isRecurring: Bool
-    var recurrenceFrequency: RecurrenceFrequency
+    var recurrenceFrequency: RecurrenceFrequency?
+    var calendarProvider: CalendarProvider
+    var calendarEventIdentifier: String?
+    var notificationMinutesBefore: Int?
+    var deepLinkID: String
     var createdAt: Date
     var updatedAt: Date
     @Relationship(deleteRule: .cascade) var nodes: [FlowNode]
@@ -24,6 +28,8 @@ final class Flow {
         durationMinutes: Int? = nil,
         isRecurring: Bool = false,
         recurrenceFrequency: RecurrenceFrequency = .daily,
+        calendarProvider: CalendarProvider = .none,
+        calendarEventIdentifier: String? = nil,
         nodes: [FlowNode] = []
     ) {
         self.title = title
@@ -34,6 +40,9 @@ final class Flow {
         self.durationMinutes = durationMinutes
         self.isRecurring = isRecurring
         self.recurrenceFrequency = recurrenceFrequency
+        self.calendarProvider = calendarProvider
+        self.calendarEventIdentifier = calendarEventIdentifier
+        self.deepLinkID = UUID().uuidString
         self.createdAt = Date()
         self.updatedAt = Date()
         self.nodes = nodes

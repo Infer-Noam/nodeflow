@@ -3,8 +3,10 @@ import SwiftData
 
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(CalendarSyncService.self) private var calendarSync
     @Query(sort: \Flow.title) private var flows: [Flow]
     @State private var showingNewFlow = false
+    @State private var deepLinkedFlow: Flow? = nil
 
     var body: some View {
         NavigationStack {
@@ -26,6 +28,16 @@ struct HomeView: View {
             .sheet(isPresented: $showingNewFlow) {
                 FlowFormView()
             }
+            .navigationDestination(item: $deepLinkedFlow) { flow in
+                FlowDetailView(flow: flow)
+            }
+            .onOpenURL { url in
+                guard url.scheme == "nodeflow",
+                      url.host == "flow",
+                      let id = url.pathComponents.dropFirst().first
+                else { return }
+                deepLinkedFlow = flows.first { $0.deepLinkID == id }
+            }
         }
     }
 
@@ -39,7 +51,10 @@ struct HomeView: View {
                     .buttonStyle(.plain)
                     .contextMenu {
                         Button(role: .destructive) {
-                            modelContext.delete(flow)
+                            Task {
+                                await calendarSync.remove(flow: flow)
+                                modelContext.delete(flow)
+                            }
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
@@ -70,4 +85,5 @@ struct HomeView: View {
 #Preview {
     HomeView()
         .modelContainer(for: Flow.self, inMemory: true)
+        .environment(CalendarSyncService(googleClientID: GoogleOAuthConfig.clientID))
 }

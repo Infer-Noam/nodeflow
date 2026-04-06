@@ -1,0 +1,14 @@
+import Foundation
+
+enum GoogleOAuthConfig {
+    // 1. Go to https://console.cloud.google.com/apis/credentials
+    // 2. Create an OAuth 2.0 Client ID → iOS application type
+    // 3. Paste the client ID below (format: NUMBERS-HASH.apps.googleusercontent.com)
+    // 4. In Xcode → Target → Info → URL Types, add a URL scheme:
+    //    com.googleusercontent.apps.NUMBERS-HASH  (same as below but reversed)
+    static let clientID = "YOUR_CLIENT_ID.apps.googleusercontent.com"
+
+    static var isConfigured: Bool {
+        !clientID.hasPrefix("YOUR_CLIENT_ID")
+    }
+}

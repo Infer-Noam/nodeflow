@@ -6,9 +6,10 @@ struct FlowFormView: View {
     @State private var viewModel: FlowFormViewModel
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(CalendarSyncService.self) private var calendarSync
     @FocusState private var focusedField: Field?
 
-    enum Field { case title, flowNotes, nodeTitle, nodeNotes, nodeDuration }
+    enum Field { case title, flowNotes }
 
     init(existingFlow: Flow? = nil) {
         _viewModel = State(initialValue: FlowFormViewModel(existingFlow: existingFlow))
@@ -19,7 +20,8 @@ struct FlowFormView: View {
             Form {
                 flowInfoSection
                 scheduleSection
-                FlowNodesSection(viewModel: $viewModel, focusedField: $focusedField)
+                FlowCalendarSection(viewModel: $viewModel, calendarSync: calendarSync)
+                FlowNodesSection(viewModel: $viewModel)
             }
             .navigationTitle(viewModel.isEditing ? "Edit Flow" : "New Flow")
             .navigationBarTitleDisplayMode(.inline)
@@ -29,7 +31,11 @@ struct FlowFormView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        viewModel.trySave(context: modelContext, focusTitle: { focusedField = .title }) {
+                        viewModel.trySave(
+                            context: modelContext,
+                            calendarSync: calendarSync,
+                            focusTitle: { focusedField = .title }
+                        ) {
                             dismiss()
                         }
                     }
@@ -70,21 +76,9 @@ struct FlowFormView: View {
 
     private var scheduleSection: some View {
         Section("Schedule") {
-            Toggle("Set a time", isOn: $viewModel.hasScheduledTime)
-            if viewModel.hasScheduledTime {
-                DatePicker("Start time", selection: $viewModel.scheduledTime, displayedComponents: .hourAndMinute)
-            }
             Toggle("Set duration", isOn: $viewModel.hasDuration)
             if viewModel.hasDuration {
                 Stepper("\(viewModel.durationMinutes) min total", value: $viewModel.durationMinutes, in: 5...480, step: 5)
-            }
-            Toggle("Recurring", isOn: $viewModel.isRecurring)
-            if viewModel.isRecurring {
-                Picker("Frequency", selection: $viewModel.recurrenceFrequency) {
-                    ForEach(RecurrenceFrequency.allCases, id: \.self) { freq in
-                        Text(freq.rawValue).tag(freq)
-                    }
-                }
             }
         }
     }
@@ -94,5 +88,6 @@ struct FlowFormView: View {
 #Preview {
     FlowFormView()
         .modelContainer(for: Flow.self, inMemory: true)
+        .environment(CalendarSyncService(googleClientID: GoogleOAuthConfig.clientID))
 }
 

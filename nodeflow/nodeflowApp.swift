@@ -12,9 +12,12 @@ struct nodeflowApp: App {
         }
     }()
 
+    let calendarSync = CalendarSyncService(googleClientID: GoogleOAuthConfig.clientID)
+
     var body: some Scene {
         WindowGroup {
             HomeView()
+                .environment(calendarSync)
         }
         .modelContainer(sharedModelContainer)
     }

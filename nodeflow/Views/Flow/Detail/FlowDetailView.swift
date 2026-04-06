@@ -21,7 +21,7 @@ struct FlowDetailView: View {
                         LabeledContent("Duration", value: "\(duration) min")
                     }
                     if flow.isRecurring {
-                        LabeledContent("Recurring", value: flow.recurrenceFrequency.rawValue)
+                        LabeledContent("Recurring", value: (flow.recurrenceFrequency ?? .daily).rawValue)
                     }
                 }
             }

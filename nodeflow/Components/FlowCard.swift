@@ -13,7 +13,7 @@ struct FlowCard: View {
                     .font(.headline)
                 Spacer()
                 if flow.isRecurring {
-                    Label(flow.recurrenceFrequency.rawValue, systemImage: "repeat")
+                    Label((flow.recurrenceFrequency ?? .daily).rawValue, systemImage: "repeat")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

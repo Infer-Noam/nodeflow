@@ -7,21 +7,22 @@ struct FlowNodesSection: View {
     var body: some View {
         Section {
             if !viewModel.nodes.isEmpty {
-                ForEach(viewModel.nodes.indices, id: \.self) { i in
+                ForEach(viewModel.nodes) { draft in
+                    let index = viewModel.nodes.firstIndex(where: { $0.id == draft.id }) ?? 0
                     VStack(alignment: .leading, spacing: 3) {
                         HStack(spacing: 8) {
-                            CustomIcon(emoji: viewModel.nodes[i].emoji.isEmpty ? nil : viewModel.nodes[i].emoji, imageData: viewModel.nodes[i].imageData, size: 32)
-                            Text("\(i + 1). \(viewModel.nodes[i].title)")
+                            CustomIcon(emoji: draft.emoji.isEmpty ? nil : draft.emoji, imageData: draft.imageData, size: 32)
+                            Text("\(index + 1). \(draft.title)")
                                 .font(.body)
                             Spacer()
-                            if let d = viewModel.nodes[i].duration {
+                            if let d = draft.duration {
                                 Text("\(d) min")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
                         }
-                        if !viewModel.nodes[i].notes.isEmpty {
-                            Text(viewModel.nodes[i].notes)
+                        if !draft.notes.isEmpty {
+                            Text(draft.notes)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }

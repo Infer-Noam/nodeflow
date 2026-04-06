@@ -3,7 +3,8 @@ import SwiftData
 
 @Observable
 class FlowFormViewModel {
-    struct NodeDraft {
+    struct NodeDraft: Identifiable {
+        let id = UUID()
         var title: String
         var emoji: String
         var notes: String

@@ -1,17 +1,27 @@
 import SwiftUI
 
+enum NodeSheetMode: Identifiable {
+    case add
+    case edit(FlowFormViewModel.NodeDraft)
+
+    var id: String {
+        switch self {
+        case .add: return "add"
+        case .edit(let draft): return draft.id.uuidString
+        }
+    }
+}
+
 struct FlowNodesSection: View {
     @Binding var viewModel: FlowFormViewModel
-
-    @State private var editingNode: FlowFormViewModel.NodeDraft? = nil
-    @State private var addingNode = false
+    @Binding var sheetMode: NodeSheetMode?
 
     var body: some View {
         Section {
             if !viewModel.nodes.isEmpty {
                 ForEach(viewModel.nodes) { draft in
                     let index = viewModel.nodes.firstIndex(where: { $0.id == draft.id }) ?? 0
-                    Button { editingNode = draft } label: {
+                    Button { sheetMode = .edit(draft) } label: {
                         VStack(alignment: .leading, spacing: 3) {
                             HStack(spacing: 8) {
                                 CustomIcon(emoji: draft.emoji.isEmpty ? nil : draft.emoji, imageData: draft.imageData, size: 32)
@@ -43,7 +53,7 @@ struct FlowNodesSection: View {
             }
 
             Button {
-                addingNode = true
+                sheetMode = .add
             } label: {
                 Label("Add Node", systemImage: "plus.circle.fill")
             }
@@ -59,19 +69,6 @@ struct FlowNodesSection: View {
                 }
             }
         }
-        .sheet(item: $editingNode) { node in
-            NodeEditSheet(title: "Edit Node", node: node) { updated in
-                if let i = viewModel.nodes.firstIndex(where: { $0.id == updated.id }) {
-                    viewModel.nodes[i] = updated
-                }
-            }
-        }
-        .sheet(isPresented: $addingNode) {
-            NodeEditSheet(title: "New Node", node: FlowFormViewModel.NodeDraft(title: "", emoji: "", notes: "", duration: nil, imageData: nil)) { newNode in
-                if !newNode.title.isEmpty {
-                    viewModel.nodes.append(newNode)
-                }
-            }
-        }
     }
 }
+

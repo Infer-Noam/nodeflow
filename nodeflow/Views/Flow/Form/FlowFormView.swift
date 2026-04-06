@@ -8,6 +8,7 @@ struct FlowFormView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(CalendarSyncService.self) private var calendarSync
     @FocusState private var focusedField: Field?
+    @State private var nodeSheetMode: NodeSheetMode? = nil
 
     enum Field { case title, flowNotes }
 
@@ -21,7 +22,7 @@ struct FlowFormView: View {
                 flowInfoSection
                 scheduleSection
                 FlowCalendarSection(viewModel: $viewModel, calendarSync: calendarSync)
-                FlowNodesSection(viewModel: $viewModel)
+                FlowNodesSection(viewModel: $viewModel, sheetMode: $nodeSheetMode)
             }
             .navigationTitle(viewModel.isEditing ? "Edit Flow" : "New Flow")
             .navigationBarTitleDisplayMode(.inline)
@@ -46,6 +47,22 @@ struct FlowFormView: View {
                 }
             }
             .onAppear { viewModel.loadExisting() }
+            .sheet(item: $nodeSheetMode) { mode in
+                switch mode {
+                case .add:
+                    NodeEditSheet(title: "New Node", node: FlowFormViewModel.NodeDraft(title: "", emoji: "", notes: "", duration: nil, imageData: nil)) { newNode in
+                        if !newNode.title.isEmpty {
+                            viewModel.nodes.append(newNode)
+                        }
+                    }
+                case .edit(let node):
+                    NodeEditSheet(title: "Edit Node", node: node) { updated in
+                        if let i = viewModel.nodes.firstIndex(where: { $0.id == updated.id }) {
+                            viewModel.nodes[i] = updated
+                        }
+                    }
+                }
+            }
         }
     }
 

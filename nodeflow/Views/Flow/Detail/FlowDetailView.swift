@@ -4,6 +4,7 @@ import SwiftUI
 struct FlowDetailView: View {
     @Bindable var flow: Flow
     @State private var showingEdit = false
+    @State private var showingRun = false
 
     var sortedNodes: [FlowNode] {
         flow.nodes.sorted { $0.order < $1.order }
@@ -80,9 +81,24 @@ struct FlowDetailView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button("Edit") { showingEdit = true }
             }
+            if !flow.nodes.isEmpty {
+                ToolbarItem(placement: .bottomBar) {
+                    Button {
+                        showingRun = true
+                    } label: {
+                        Label("Start Flow", systemImage: "play.fill")
+                            .font(.headline)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                }
+            }
         }
         .sheet(isPresented: $showingEdit) {
             FlowFormView(existingFlow: flow)
+        }
+        .fullScreenCover(isPresented: $showingRun) {
+            FlowRunView(flow: flow)
         }
     }
 }

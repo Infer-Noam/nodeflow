@@ -7,6 +7,7 @@ struct HomeView: View {
     @Query(sort: \Flow.title) private var flows: [Flow]
     @State private var showingNewFlow = false
     @State private var deepLinkedFlow: Flow? = nil
+    @State private var runningFlow: Flow? = nil
 
     var body: some View {
         NavigationStack {
@@ -38,6 +39,9 @@ struct HomeView: View {
                 else { return }
                 deepLinkedFlow = flows.first { $0.deepLinkID == id }
             }
+            .fullScreenCover(item: $runningFlow) { flow in
+                FlowRunView(flow: flow)
+            }
         }
     }
 
@@ -50,6 +54,14 @@ struct HomeView: View {
                     }
                     .buttonStyle(.plain)
                     .contextMenu {
+                        if !flow.nodes.isEmpty {
+                            Button {
+                                runningFlow = flow
+                            } label: {
+                                Label("Start Flow", systemImage: "play.fill")
+                            }
+                            Divider()
+                        }
                         Button(role: .destructive) {
                             Task {
                                 await calendarSync.remove(flow: flow)
